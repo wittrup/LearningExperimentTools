@@ -104,11 +104,17 @@ def usage():
 		Usage:	%s inputfile.txt
 	"""
 
+def make_graphs(filename):
+	attendees = load_file(filename)
+	# One side effect not enough? How about two for you!
+	all_nodes = draw_learning_paths(attendees)
+	draw_agregated_graph(all_nodes, filename)
+
+
 if __name__ == '__main__':
 	if len(sys.argv) < 2:
 		print usage()
 		exit(1)
-
-	attendees = load_file(sys.argv[1])
-	all_nodes = draw_learning_paths(attendees)
-	draw_agregated_graph(all_nodes, sys.argv[1])
+	filename = sys.argv[1]
+	make_graphs(filename)
+	
