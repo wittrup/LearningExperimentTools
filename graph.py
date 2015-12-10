@@ -7,11 +7,16 @@ import requests_cache
 from bs4 import BeautifulSoup
 import sys
 import argparse
+import classification
 
 attendees = {}
 globallabels = {}
 VIEW_OUTPUT_SETTING = True
 OUTPUT_FOLDER = ""
+# Builds a topic classifier
+api_key = classification.get_api_key()
+# Make it
+classifier = classification.ComputerTopicsClassifier(api_key)
 
 def fetchLinks(iterable):
 	vask = lambda x: re.search(r"http[^\s]+", x).group(0).rstrip()
@@ -62,6 +67,10 @@ def fetchInfo(links):
 					title=""
 			else:
 				title=""
+			#CLASSIFY
+			json = classifier.classify(link)
+			main_topic = classifier.main_topic(json)
+			title += "{%s}" % main_topic
 			labels[link] = (label, title)
 			nodes.append((label, title, link))
 	return nodes
