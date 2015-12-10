@@ -3,9 +3,12 @@
 import requests
 import urllib
 import operator
+import os
+
 
 def get_api_key():
-	with open('uclassify.read_api_key.txt') as api_key_file:
+	folder = os.path.dirname(__file__)
+	with open(os.path.join(folder, 'uclassify.read_api_key.txt')) as api_key_file:
 		api_key = api_key_file.read().rstrip()
 	return api_key
 
