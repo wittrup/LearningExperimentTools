@@ -22,7 +22,7 @@ class Classifier():
 
 	def build_call_url(self, api_url, query_url):
 		"Urlencodes the query url and puts it in the api call url"
-		return api_url % (self.api_key, urllib.quote_plus(query_url))
+		return api_url % (self.api_key, urllib.parse.quote_plus(query_url))
 
 
 	def classify(self, url):
@@ -38,7 +38,7 @@ class Classifier():
 	def main_topic(self, json):
 		"Goes through the list of candidates and returns the one with highest rank/probability"
 		candidates = json['cls1']
-		return max(candidates.iteritems(), key=operator.itemgetter(1))[0]
+		return max(candidates.items(), key=operator.itemgetter(1))[0]
 
 
 ########################################################################
@@ -93,15 +93,15 @@ if __name__ == '__main__':
 	
 	url = "http://stackoverflow.com/questions/8259001/python-argparse-command-line-flags-without-arguments"
 	json = classifier.classify(url)
-	print classifier.main_topic(json)
+	print(classifier.main_topic(json))
 	
 	# aRTSY
 	url = "http://www.biography.com/people/leonardo-da-vinci-40396"
-	print arts_classifier.main_topic(arts_classifier.classify(url))
+	print(arts_classifier.main_topic(arts_classifier.classify(url)))
 
 	#Language
 	classifier = LanguageClassifier(api_key)
 	url = "http://basicinternet.no"
 	json = classifier.classify(url)
-	print classifier.main_topic(json)
+	print(classifier.main_topic(json))
 	
