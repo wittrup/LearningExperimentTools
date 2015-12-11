@@ -22,7 +22,12 @@ class Classifier():
 
 	def build_call_url(self, api_url, query_url):
 		"Urlencodes the query url and puts it in the api call url"
-		return api_url % (self.api_key, urllib.parse.quote_plus(query_url))
+		try:
+			#py 3.x
+			return api_url % (self.api_key, urllib.parse.quote_plus(query_url))
+		except:
+			#py 2.x
+			return api_url % (self.api_key, urllib.quote_plus(query_url))
 
 
 	def classify(self, url):
