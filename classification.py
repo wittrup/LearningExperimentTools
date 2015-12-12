@@ -4,10 +4,29 @@ import requests
 import urllib
 import operator
 import os
+import re
+
 """
 	A python module for classifying topics in urls using uclassify.com.
 	See http://uclassify.com for api-key and documentation
 """
+
+def just_classify(theurl):
+	"Factory function to simplify classifying life"
+	api_key= get_api_key()
+	
+	#classifies the category
+	classifier = TopicsClassifier(api_key)
+	category = classifier.main_topic(classifier.classify(theurl))
+
+	#selects the right class. 
+	classifier = globals()[
+		"%sTopicsClassifier" % re.sub("s$", "", category)](api_key)
+
+	#Then finds the subcategory topic
+	topic = classifier.main_topic(classifier.classify(theurl))
+	return category, topic
+
 
 def get_api_key():
 	folder = os.path.dirname(__file__)
@@ -92,10 +111,19 @@ class LanguageClassifier(Classifier):
 
 
 if __name__ == '__main__':
+	import sys
+
+	if len(sys.argv) > 1:
+		print(just_classify(sys.argv[1]))
+		exit(0)
+
 	api_key = get_api_key()
 	classifier = ComputerTopicsClassifier(api_key)
 	arts_classifier = ArtTopicsClassifier(api_key)
 	
+	whatitsabout = just_classify("http://nattest.net.in.tum.de/test.php")
+	print(whatitsabout)
+
 	url = "http://stackoverflow.com/questions/8259001/python-argparse-command-line-flags-without-arguments"
 	json = classifier.classify(url)
 	print(classifier.main_topic(json))
