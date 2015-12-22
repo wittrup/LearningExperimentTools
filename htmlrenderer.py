@@ -35,4 +35,4 @@ if __name__ == '__main__':
 				for (label, title, link) in nodes]
 
 	learningpath = LearningPath(nodes=los, title="Testpath")
-	print render_to_html(learningpath)
+	print(render_to_html(learningpath))

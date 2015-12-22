@@ -12,7 +12,12 @@ from model import LearningPath, LearningObject
 import htmlrenderer
 import os
 import webbrowser
-from urlparse import urlparse
+try:
+	#py 3.x
+	from urllib.parse import urlparse
+except:
+	#py 2.x
+	from urlparse import urlparse
 
 attendees = {}
 globallabels = {}
@@ -130,7 +135,7 @@ def makeGraph(name, nodes):
 		fragment = nodeinfo.urlparts.fragment
 		domain = nodeinfo.domain()
 
-		print domain
+		print(domain)
 		nodetext =  "[%s] %s-%s\n%s" % (label, title, fragment, domain )
 		dot.node(label, nodetext)
 		if i < len(nodes)-1:
