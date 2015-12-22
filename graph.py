@@ -8,6 +8,10 @@ from bs4 import BeautifulSoup
 import sys
 import argparse
 import classification
+from model import LearningPath, LearningObject
+import htmlrenderer
+import os
+
 
 attendees = {}
 globallabels = {}
@@ -70,7 +74,8 @@ def fetchInfo(links):
 			#CLASSIFY
 			json = classifier.classify(link)
 			main_topic = classifier.main_topic(json)
-			title += "{%s}" % main_topic
+			#title += "{%s}" % main_topic
+			print(main_topic)
 			labels[link] = (label, title)
 			nodes.append((label, title, link))
 	return nodes
@@ -97,15 +102,31 @@ def makeGraph(name, nodes):
 			dot.edge(label, next_label)
 	return dot
 
+
+def nodeinfos_to_LearningPath(nodes, name=""):
+	los = [LearningObject(url=link, title=title) \
+				for (label, title, link) in nodes]
+	return LearningPath(los, title=name)
+
+
 def draw_learning_paths(attendees):
 	all_nodes = []
 	# Making learning paths
 	for name, links in attendees.items():
 		nodes = fetchInfo(links)
 		all_nodes.append(nodes)
-		fn = u"%s" % name
+
+		# Make dot file + pdf
 		g = makeGraph(name, nodes)
 		g.render(name, view=VIEW_OUTPUT_SETTING, directory=OUTPUT_FOLDER)
+		
+		# Make html
+		learningpath = nodeinfos_to_LearningPath(nodes, name)
+		
+		with open("%s.html"%name, "w+") as htmlfile:
+			htmlfile.write(
+				htmlrenderer.render_to_html(learningpath).encode('utf-8')
+			)
 	return all_nodes
 
 
@@ -148,13 +169,16 @@ if __name__ == '__main__':
 				help='Set output folder for generated graphviz files',
 				default='')
 	parser.add_argument(
-		'--silent', action="store_true", 
-				help='If provided, the generated pdfs will not be displayed (default behavior)')
+		'--view', action="store_true", 
+				help='If provided, the generated pdfs will be displayed')
 	# Get the arguments
 	args = parser.parse_args()
-	VIEW_OUTPUT_SETTING = args.silent
+	VIEW_OUTPUT_SETTING = args.view
 	OUTPUT_FOLDER = args.folder
 	
+	print ("Building graphs")
+	print ("Arguments given:")
+	print(args)
 
 	# Cache it.
 	for filename in args.files:
