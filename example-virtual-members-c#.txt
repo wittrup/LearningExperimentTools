@@ -1,0 +1,30 @@
+##1Robin
+About: Speaks about what virtual members are, wanted to find an overview.
+	https://msdn.microsoft.com/en-us/library/ms229044%28v=vs.110%29.aspx
+
+example: Shows a basic example of inherited class implementing virtual members from base class, wanted to see a concrete example.
+	https://msdn.microsoft.com/en-us/library/9fkccyh4.aspx
+
+
+
+
+##2Bjorn
+https://msdn.microsoft.com/en-us/library/9fkccyh4.aspx - Introduksjon, microsoft sin offisielle dokumentasjon og derfor sikker kilde.
+
+http://stackoverflow.com/questions/81052/when-should-a-class-member-be-declared-virtual-c-overridable-vb-net - eksempel - spørsmål/svar rundt temaet(ikkje offisielt og brukergenerert)
+
+http://www.dotnetperls.com/virtual - blogg om temaet/ forklaring
+
+http://www.codeproject.com/Articles/816448/Virtual-vs-Override-vs-New-Keyword-in-Csharp - plassering i landskapet med relaterte ting
+
+
+
+##3Tormod
+Informasjon/definisjon med eksempler - Microsoft - Troverdig kilde
+https://msdn.microsoft.com/en-us/library/9fkccyh4.aspx
+
+Informasjon/definisjon med eksempler - Microsoft - Informasjon om tett relatert tema, Offisiell dokumentasjon
+https://msdn.microsoft.com/en-us/library/sf985hc5.aspx
+
+Informasjon/definisjon med eksempler - Microsoft - Mer informasjon om tema 
+https://msdn.microsoft.com/en-us/library/aa645767%28v=vs.71%29.aspx
