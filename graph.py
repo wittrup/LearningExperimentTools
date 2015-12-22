@@ -11,7 +11,8 @@ import classification
 from model import LearningPath, LearningObject
 import htmlrenderer
 import os
-
+import webbrowser
+from urlparse import urlparse
 
 attendees = {}
 globallabels = {}
@@ -35,7 +36,7 @@ def guid(link):
 
 def load_text(text):
 	attendees = {}
-	for attendee in text.split('#')[1:]:
+	for attendee in text.split('##')[1:]:
 			lines = attendee.split("\n")
 			name = lines[0].rstrip()
 			links = fetchLinks(lines)
@@ -51,6 +52,53 @@ def load_file(filename):
 	return attendees
 
 
+class LinkMeta():
+	def  __init__(self, link):
+		self.link = link
+		self.urlparts = urlparse(link)
+
+
+	def parse(self):
+		""" Extracting intels about ze link for you sir. """
+		self.label = guid(self.link)
+		
+		r = requests.get(self.link)
+		if r:
+			soup = BeautifulSoup(r.text, 'html.parser')
+			try:
+				self.title = soup.select("title")[0].string
+
+				self.meta = fetchMeta(soup)
+				#print meta
+			except:
+				self.title=""
+		else:
+			self.title=""
+
+		self.classify()
+		return self
+
+
+	def classify(self):
+		#CLASSIFY
+		self.json = classifier.classify(self.link)
+		self.main_topic = classifier.main_topic(self.json)
+
+
+	def domain(self):
+		return self.urlparts.netloc.split(":")[0]
+
+	#should be __str__ maybe, but I find it clumsy to type str(around everything).
+	def __repr__(self):
+		""" Defaults to textual representation """
+		return self.textual_representation()
+
+	def textual_representation(self):
+		if self.urlparts.fragment is not "":
+			return "[%d]%s - %s\n%s" % (self.label, self.title, self.urlparts.fragment, self.domain())
+		else:
+			return "[%d]%s\n%s" % (self.label, self.title,  self.domain())
+
 
 def fetchInfo(links):
 	# Genererer unike labler:
@@ -59,25 +107,12 @@ def fetchInfo(links):
 	nodes = []
 	for link in links:
 		if link not in labels:
-			label = guid(link)
-			r = requests.get(link)
-			if r:
-				soup = BeautifulSoup(r.text, 'html.parser')
-				try:
-					title = soup.select("title")[0].string
-					meta = fetchMeta(soup)
-					#print meta
-				except:
-					title=""
-			else:
-				title=""
-			#CLASSIFY
-			json = classifier.classify(link)
-			main_topic = classifier.main_topic(json)
+			meta = LinkMeta(link).parse()
+			
 			#title += "{%s}" % main_topic
-			print(main_topic)
-			labels[link] = (label, title)
-			nodes.append((label, title, link))
+			print(meta.main_topic)
+			labels[link] = (meta.label, meta)
+			nodes.append(meta)
 	return nodes
 
 
@@ -91,21 +126,23 @@ def makeGraph(name, nodes):
 	# Build the graph
 	
 	for i, nodeinfo in enumerate(nodes):
-		label, title, link = nodeinfo
-		domain = link.split("/")[2]
+		label, title, link = nodeinfo.label, nodeinfo.title, nodeinfo.link
+		fragment = nodeinfo.urlparts.fragment
+		domain = nodeinfo.domain()
+
 		print domain
-		nodetext =  "[%s] %s\n%s" % (label, title, domain)
+		nodetext =  "[%s] %s-%s\n%s" % (label, title, fragment, domain )
 		dot.node(label, nodetext)
 		if i < len(nodes)-1:
 			#next node
-			next_label, next_title, next_link = nodes[i+1]
-			dot.edge(label, next_label)
+			next_node = nodes[i+1]
+			dot.edge(label, next_node.label)
 	return dot
 
 
 def nodeinfos_to_LearningPath(nodes, name=""):
-	los = [LearningObject(url=link, title=title) \
-				for (label, title, link) in nodes]
+	los = [LearningObject(url=m.link, title=m.title) \
+				for m in nodes]
 	return LearningPath(los, title=name)
 
 
@@ -123,10 +160,13 @@ def draw_learning_paths(attendees):
 		# Make html
 		learningpath = nodeinfos_to_LearningPath(nodes, name)
 		
-		with open("%s.html"%name, "w+") as htmlfile:
+		hfname="%s.html"%name
+		with open(hfname, "w+") as htmlfile:
 			htmlfile.write(
 				htmlrenderer.render_to_html(learningpath).encode('utf-8')
 			)
+			if VIEW_OUTPUT_SETTING:
+				webbrowser.open(hfname)
 	return all_nodes
 
 
@@ -135,13 +175,13 @@ def draw_agregated_graph(all_nodes, name):
 	G = graphviz.Digraph(comment='%s - %s' % (name, "Agregated Graph"))
 	for nodes in all_nodes:
 		for i, node in enumerate(nodes):
-			label, title, link = node
+			label, title, link = node.label, node.title, node.link
 			G.node(label, label)
 			#next node
 			if i < len(nodes)-1:
 				#next node
-				next_label, next_title, next_link = nodes[i+1]
-				G.edge(label, next_label)
+				next_node = nodes[i+1]
+				G.edge(label, next_node.label)
 
 	G.render("%s-Agregated_Graph"%(name), directory=OUTPUT_FOLDER, view=VIEW_OUTPUT_SETTING)
 
